@@ -1,0 +1,98 @@
+version: '3.7'
+services:
+  solr1:
+    image: solr:8.6.2
+    container_name: solr1
+    ports:
+     - "8984:8983"
+    environment:
+      - ZK_HOST=zoo1:2181,zoo2:2181,zoo3:2181
+    networks:
+      - zoonet
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+
+  solr2:
+    image: solr:8.6.2
+    container_name: solr2
+    ports:
+     - "8985:8983"
+    environment:
+      - ZK_HOST=zoo1:2181,zoo2:2181,zoo3:2181
+    networks:
+      - zoonet
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+
+  solr3:
+    image: solr:8.6.2
+    container_name: solr3
+    ports:
+     - "8986:8983"
+    environment:
+      - ZK_HOST=zoo1:2181,zoo2:2181,zoo3:2181
+    networks:
+      - zoonet
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+#/-------------------------------------------------------------------------------/#
+  zoo1:
+    image: bitnami/zookeeper:latest
+    restart: always
+    hostname: zoo1
+    ports:
+      - 2181:2181
+      - '2888'
+      - '3888'
+    environment:
+     - ZOO_SERVER_ID=1
+     - ALLOW_ANONYMOUS_LOGIN=yes
+     - ZOO_4LW_COMMANDS_WHITELIST=mntr,conf,ruok
+     - ZOO_SERVERS=0.0.0.0:2888:3888,zoo2:2888:3888,zoo3:2888:3888 
+    #volumes:
+    # - C:\th135e\FDMS\integration_nifi\cluster\volumes\zookeeper:/bitnami/zookeeper
+    networks: 
+      - zoonet  
+
+  zoo2:
+    image: bitnami/zookeeper:latest
+    restart: always
+    hostname: zoo2
+    ports:
+      - 2182:2181
+      - '2888'
+      - '3888'
+    environment:
+     - ZOO_SERVER_ID=2
+     - ALLOW_ANONYMOUS_LOGIN=yes
+     - ZOO_4LW_COMMANDS_WHITELIST=mntr,conf,ruok
+     - ZOO_SERVERS=zoo1:2888:3888,0.0.0.0:2888:3888,zoo3:2888:3888 
+    networks: 
+      - zoonet 
+  zoo3:
+    image: bitnami/zookeeper:latest
+    restart: always
+    hostname: zoo3
+    ports:
+      - 2183:2181
+      - '2888'
+      - '3888'
+    environment:
+      - ZOO_SERVER_ID=3
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_4LW_COMMANDS_WHITELIST=mntr,conf,ruok
+      - ZOO_SERVERS=zoo1:2888:3888,zoo2:2888:3888,0.0.0.0:2888:3888 
+    networks:
+      - zoonet
+
+#-----------------------------------------------#     
+networks: 
+  zoonet:
+    driver: bridge
+#--------------------------------------------------#
